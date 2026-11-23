@@ -51,7 +51,22 @@ def roblox_install_drops_web_chain(r):
     return "web chain out, ignores in"
 
 
-TESTS = [roblox_install_places_stack, roblox_install_drops_web_chain]
+def only_the_chosen_stack_and_update_keeps_it(r):
+    d = repo(r, "roblox-update")
+    install(r, d, "sprint")
+    stacks = sorted(p.name for p in (d / ".uak/stacks").iterdir())
+    expect(stacks == ["roblox"], "only the chosen stack is copied: %s" % stacks)
+    r.g(d, "add", "-A")
+    r.g(d, "commit", "-q", "-m", "kit")
+    e = r.env.copy()
+    e["UAK_EXTERNAL_SKILLS"] = "off"
+    r.run([r.bash, str(r.package.parent / "install.sh"), "--mode", "sprint", "--update", str(d)], cwd=d, env=e)
+    stacks = sorted(p.name for p in (d / ".uak/stacks").iterdir())
+    expect(stacks == ["roblox"], "an --update without --stack keeps the project's stack: %s" % stacks)
+    return "roblox only, kept on update"
+
+
+TESTS = [roblox_install_places_stack, roblox_install_drops_web_chain, only_the_chosen_stack_and_update_keeps_it]
 
 
 def main():

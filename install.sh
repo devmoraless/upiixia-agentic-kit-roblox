@@ -107,10 +107,17 @@ keep=$(mktemp -d)
 ext_tmp=
 trap 'rm -rf "$keep" "$ext_tmp"' EXIT
 for f in smoke-project .smoke-project.provenance; do [ ! -f "$target/.uak/bin/$f" ] || cp -p "$target/.uak/bin/$f" "$keep/$f"; done
-for part in bin docs modes templates settings stacks; do
+for part in bin docs modes templates settings; do
   rm -rf "$target/.uak/$part"
   cp -R "$kit/.uak/$part" "$target/.uak/$part"
 done
+# Only the chosen stack: a project reads its own STACK.md, never the others' (each stack added ~3 files to every
+# install, and test_install_light holds an install under 260 files).
+# An --update without --stack refreshes the stacks the project already has.
+had_stacks=; [ ! -d "$target/.uak/stacks" ] || had_stacks=$(ls "$target/.uak/stacks")
+rm -rf "$target/.uak/stacks"
+want=$had_stacks; [ "$stack" = none ] || want=$stack
+for s in $want; do [ ! -d "$kit/.uak/stacks/$s" ] || { mkdir -p "$target/.uak/stacks" && cp -R "$kit/.uak/stacks/$s" "$target/.uak/stacks/$s"; }; done
 # The kit's protocol tests and the skill library are not project files (UAK-127: 111 + 114 of 535 files). A file of an
 # earlier install goes when its hash is one the kit shipped (known-files.txt); an edited or added one stays, with its folder.
 prune_known() { # prune_known DIR

@@ -94,8 +94,11 @@ def the_hook_lints_luau_after_an_edit(r):
     payload = {"session_id": "s1", "hook_event_name": "PostToolUse", "tool_name": "Write", "tool_input": {"file_path": str(view)}}
     (w / ".git-payload.json").write_text(json.dumps(payload), encoding="utf-8")
     tick = r.run([r.bash, "-c", "bash .uak/bin/hook tick < .git-payload.json"], cwd=w, env={"UAK_NOW": "1000100"}, allowed=None)
-    expect("UAK design-lint on init.luau" in tick.stdout and "Color3 literal" in tick.stdout and "stack-roblox" in tick.stdout,
-           "the agent hears it after the edit: " + tick.stdout)
+    if "UAK design-lint on init.luau" not in tick.stdout:
+        direct = r.run([r.bash, ".uak/bin/design-lint", "--file", str(view)], cwd=w, allowed=None)
+        expect(False, "the agent hears it after the edit: out=%r err=%r direct=%r ls=%r" % (
+            tick.stdout, tick.stderr[-600:], direct.stdout + direct.stderr, sorted(p.name for p in w.iterdir())))
+    expect("Color3 literal" in tick.stdout and "stack-roblox" in tick.stdout, "the message: " + tick.stdout)
     view.write_text("local Theme = require(script.Parent)\nlocal c = Theme.color.accent\n", encoding="utf-8")
     clean = r.run([r.bash, "-c", "bash .uak/bin/hook tick < .git-payload.json"], cwd=w, env={"UAK_NOW": "1000101"}, allowed=None)
     expect("design-lint" not in clean.stdout, "a clean file says nothing: " + clean.stdout)

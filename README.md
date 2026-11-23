@@ -49,7 +49,7 @@ Going to a hackathon? The one-page plan is in **[docs/HACKATHON.md](docs/HACKATH
 git clone --depth 1 https://github.com/JoahanMorales/upiixia-agentic-kit ~/.uak-kit
 bash ~/.uak-kit/install.sh --mode sprint .          # hackathon / AI prototype
 # or: --mode marathon                               # real product: specs, CODEOWNERS, security reviews
-# options: --stack fastapi-react|nextjs|django|go|expo|python-data|ai-agent|spring-boot   --skills ai,tdd   --update (refresh the engine later)
+# options: --stack fastapi-react|nextjs|django|go|expo|python-data|ai-agent|spring-boot|roblox   --skills ai,tdd   --update (refresh the engine later)
 #          --harness claude,codex (only the dirs of the tools you use)   --no-mcp (CLI only)   --no-blackbox
 #          --solo (alone on the GitHub repo: agents review each other on claims; in marathon you still merge)
 bash .uak/bin/uak start                              # every step to the first claim, in order, then the command that starts
@@ -585,7 +585,7 @@ AGENTS.md · .claude/CLAUDE.md  76-line core every agent reads (the only kit fil
 .uak/docs/                   CLI · PROTOCOL · LOOPS · GRAPH · ORCHESTRATION · COSTS · BLACKBOX · SECURITY · WHY
 .uak/templates/              PROJECT, TASKS, OWNERS, IDEA, spec, plan, ADR
 .uak/skills/                 curated skills (superpowers, Anthropic frontend-design and webapp-testing, Vercel, taste-skill, Karpathy guidelines), pinned, licensed, plus our product-ui and landing-story
-.uak/stacks/                 stack presets: fastapi-react, nextjs, django, go, expo, python-data, ai-agent, spring-boot
+.uak/stacks/                 stack presets: fastapi-react, nextjs, django, go, expo, python-data, ai-agent, spring-boot, roblox
 .claude/                     slash commands, subagents, hooks, status line (settings per mode)
 .codex/ · .cursor/ · .gemini/  the same subagents per harness + hooks (Codex, Cursor, Gemini), only for the --harness you pick
 ```

@@ -1,7 +1,7 @@
 # Agent rules · UPIIXIA Agentic Kit
 
 Core rules for every agent. Read once per session.
-Mode: `.uak/PROJECT.md` → `Mode: sprint` (hackathon) or `marathon` (product); also read `.uak/modes/<mode>.md`. Only the human picks or changes it.
+Mode: `.uak/PROJECT.md` → `Mode: sprint` or `marathon`; read `.uak/modes/<mode>.md`, then `.uak/stacks/*/modes/<mode>.md` if present. Only the human changes it.
 `uak X` means `bash .uak/bin/uak X`. Reasons: `.uak/docs/WHY.md`.
 
 ## 1. Authority and limits

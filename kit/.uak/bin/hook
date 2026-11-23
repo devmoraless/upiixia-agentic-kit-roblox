@@ -407,19 +407,20 @@ UAK_CMD
 # from a post-edit hook for the same reason.
 # uilint and lens run without a subshell too: their line goes to NOTE.
 uilint() {
-  local tool file out
+  local tool file out skill=product-ui
   NOTE=
   [ -f .uak/bin/design-lint ] || return 0
   tool_name; tool=$TOOL
   case "$tool" in Edit|Write|MultiEdit|write_file|replace|edit_file|edit) ;; *) return 0;; esac
   jdecode_var tool_input file_path; file=$JD
   [ -n "$file" ] || { jdecode_var tool_input absolute_path; file=$JD; }; [ -n "$file" ] || { jdecode_var tool_input path; file=$JD; }
-  case "$file" in *.tsx|*.jsx|*.ts|*.js|*.vue|*.svelte|*.css) ;; *) return 0;; esac
+  case "$file" in *.tsx|*.jsx|*.ts|*.js|*.vue|*.svelte|*.css|*.luau) ;; *) return 0;; esac
   case "$file" in [A-Za-z]:[\\/]*) file=$(winpath "$file");; esac
   out=$(bash .uak/bin/design-lint --file "$file" 2>/dev/null) && return 0
   printf '%s\n' "$out" | grep -q '^DESIGN_LINT_FAIL' || return 0
-  NOTE=$(printf 'UAK design-lint on %s: %s Fix it now with the tokens and the UI kit (skill product-ui).' "${file##*/}" \
-    "$(printf '%s\n' "$out" | grep '^DESIGN_LINT [^_]' | head -n 3 | sed 's/^DESIGN_LINT [^ ]* · //' | tr '\n' ';' | sed 's/;$/./')")
+  case "$file" in *.luau) skill=stack-roblox;; esac
+  NOTE=$(printf 'UAK design-lint on %s: %s Fix it now with the tokens and the UI kit (skill %s).' "${file##*/}" \
+    "$(printf '%s\n' "$out" | grep '^DESIGN_LINT [^_]' | head -n 3 | sed 's/^DESIGN_LINT [^ ]* · //' | tr '\n' ';' | sed 's/;$/./')" "$skill")
 }
 lens() {
   local d tool cmd pat file name w prev wtop line n

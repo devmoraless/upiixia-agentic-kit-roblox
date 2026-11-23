@@ -148,10 +148,10 @@ CI_SECONDS = {
     "test_smoke_env": 2, "test_snapshot": 2, "test_task_timeline": 2, "test_banner_version": 1, "test_ci_web_deps":
     1, "test_design_brief_real": 1, "test_design_lint_html": 1, "test_design_lock_round": 1, "test_design_stage": 1,
     "test_gallery_lint": 1, "test_harvest_discovery": 1, "test_landing_skills": 1, "test_mcp_runs_commands": 1,
-    "test_policy": 1, "test_q_string": 1, "test_roblox_stack": 25
+    "test_policy": 1, "test_q_string": 1, "test_roblox_stack": 25, "test_design_lint_luau": 15
 }
 CI_WINDOWS_SECONDS = {
-    "test_roblox_stack": 90,
+    "test_roblox_stack": 90, "test_design_lint_luau": 60,
     "test_flaky_guard_race": 1360, "test_merge_engine_policy": 905, "test_merge_commit_field": 455, "test_flaky_guard": 220,
     "test_integrate_unreviewed": 420, "test_claims_perf": 385, "test_review_merge": 380, "test_v51": 374,
     "test_review_substates": 330, "test_v57": 300, "test_hack": 254, "test_smoke_affected": 244, "test_pre_push":

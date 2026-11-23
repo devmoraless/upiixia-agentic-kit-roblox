@@ -23,6 +23,19 @@ You are given the task ID; the commit is `git rev-parse --short=7 HEAD`. Your fi
    - Signature: the one memorable element of DESIGN.md is visible; the hero is the most saturated thing; the product's core claim shows as a visual (a forecast as a chart with its band, a route on the map), not only a sentence.
    - Numbers: the hero number on screen equals what the app computes from its fixtures or API (open the fixture).
    - Against the references: name 3 concrete differences (density, type size, spacing) and whether each one hurts.
+**Roblox project** (`default.project.json` exists): there is no browser, so steps 1–4 become these; steps 5–6 stay.
+- Read `src/shared/Theme.luau`, the UI kit in `src/client/ui/kit/`, the art direction in `IDEA.md` and the stack's mode
+  file (`.uak/stacks/roblox/modes/<mode>.md`). Run `bash .uak/bin/design-lint --changed`: each finding is a P1.
+- Screenshots come from Studio (a human, or a Studio MCP if one is connected): PC 1280×720 as `1280.png` and a phone
+  390×844 from the Device emulator as `390.png` in `.uak-shots/<ID>/`. None there? Write `VERDICT: FIX <sha7>` with
+  "screenshots needed: <what to capture>" and stop; never judge UI from code alone.
+- Open every PNG with Read, then score 0–2 (any 0 is a P1): Theme (only theme colors and fonts; same kit components as
+  the other screens) · Phone (touch targets ≥ 44 px; nothing under the thumbstick, jump button or the top-bar Roblox
+  menu; text readable at 390 wide; `UIScale`/Scale, no offset-only layouts that clip) · Hierarchy (one primary action
+  per screen; the HUD shows only what the core loop needs) · Feedback (every button has a pressed state and sound; the
+  action's result is visible within 100 ms) · Content (no `nil`, raw IDs, debug text or unlabeled placeholders) ·
+  Craft (contrast readable over the 3D world, consistent corner radius and stroke, no emoji icons).
+
 5. Write `.uak-shots/<ID>/critic.txt` with Bash: line 1 `VERDICT: SHIP <sha7>` (no P1) or `VERDICT: FIX <sha7>`, then the scores, each P1 as `screen · problem · concrete fix`, and the files you read. `uak done` refuses a UI task without `SHIP` for its current commit.
 6. Return the same text, 12 lines or fewer.
 """

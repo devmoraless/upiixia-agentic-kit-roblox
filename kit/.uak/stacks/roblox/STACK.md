@@ -1,6 +1,7 @@
 # Stack · Roblox (Luau, Rojo, Lune)
 
 Setup for the first task and structure reference. Conventions: the `stack-roblox` skill.
+Modes: after `.uak/modes/<mode>.md`, read `.uak/stacks/roblox/modes/<mode>.md` (game jam or live game): it replaces the web parts.
 The game lives as `.luau` text files synced into Studio by Rojo, so Git, worktrees, Paths and reviews work as in any
 other stack. A `.rbxl`/`.rbxlx` place file is a build output, never the source of truth.
 

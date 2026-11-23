@@ -35,6 +35,11 @@ def roblox_install_places_stack(r):
                   "tests/init.luau", "tests/score.spec.luau"):
             expect((tpl / f).is_file(), mode + ": template has " + f)
         expect((d / ".claude/skills/test-first/SKILL.md").is_file(), mode + ": the mode's own skills stay")
+        overlay = d / ".uak/stacks/roblox/modes" / (mode + ".md")
+        expect(overlay.is_file(), mode + ": the Roblox mode overlay is placed")
+        expect(("modes/%s.md" % mode) in overlay.read_text(encoding="utf-8"), mode + ": the overlay names the mode it extends")
+        agents = (d / "AGENTS.md").read_text(encoding="utf-8")
+        expect(".uak/stacks/*/modes/<mode>.md" in agents, "AGENTS.md sends agents to the stack's mode overlay")
     return "sprint+marathon"
 
 

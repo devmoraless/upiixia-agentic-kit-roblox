@@ -9,6 +9,7 @@ import time
 from pathlib import Path
 
 from test_hack import Runner, expect, resolve_binary
+from test_tokens_coverage import remove_tree
 from test_v43 import push_main
 
 THEME = "--!strict\nreturn { color = { accent = Color3.fromRGB(255, 176, 32) }, font = Enum.Font.GothamBold }\n"
@@ -92,7 +93,7 @@ def the_hook_lints_luau_after_an_edit(r):
     view.parent.mkdir(parents=True, exist_ok=True)
     view.write_text("local c = Color3.fromRGB(10, 20, 30)\n", encoding="utf-8")
     payload = {"session_id": "s1", "hook_event_name": "PostToolUse", "tool_name": "Write", "tool_input": {"file_path": str(view)}}
-    (w / ".git-payload.json").write_text(json.dumps(payload), encoding="utf-8")
+    (w / ".git-payload.json").write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")  # raw UTF-8, as the harnesses send it
     tick = r.run([r.bash, "-c", "bash .uak/bin/hook tick < .git-payload.json"], cwd=w, env={"UAK_NOW": "1000100"}, allowed=None)
     if "UAK design-lint on init.luau" not in tick.stdout:
         direct = r.run([r.bash, ".uak/bin/design-lint", "--file", str(view)], cwd=w, allowed=None)
@@ -114,7 +115,10 @@ def main():
     parser.add_argument("--case", action="append")
     args = parser.parse_args()
     fails = 0
-    with tempfile.TemporaryDirectory(prefix="uak-dlint-luau-") as tmp:
+    # Not TemporaryDirectory: on Windows the hook's background work can still hold the worktree when the cases end
+    # (WinError 32 on dl-luau-hook/worktree-1, CI 2026-11-23); remove_tree retries, then warns instead of failing.
+    tmp = tempfile.mkdtemp(prefix="uak-dlint-luau-")
+    try:
         runner = Runner(args.package.resolve(), Path(tmp), resolve_binary("bash"), resolve_binary("git"))
         for test in TESTS:
             if args.case and test.__name__ not in args.case:
@@ -126,6 +130,8 @@ def main():
             except Exception as exc:  # noqa: BLE001
                 fails += 1
                 print("FAIL %s (%s)" % (test.__name__, str(exc)[:2500]))
+    finally:
+        remove_tree(tmp)
     print("DESIGN_LINT_LUAU_RESULT %s failed=%d" % ("PASS" if not fails else "FAIL", fails))
     return 1 if fails else 0
 

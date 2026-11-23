@@ -1,0 +1,2 @@
+--!strict
+-- Server entry: require each feature's server module from here. Validate every remote on the server.

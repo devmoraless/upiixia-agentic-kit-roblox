@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # UPIIXIA Agentic Kit installer.
-#   bash install.sh --mode sprint|marathon [--stack fastapi-react|nextjs|django|go|expo|python-data|ai-agent|spring-boot|none]
+#   bash install.sh --mode sprint|marathon [--stack fastapi-react|nextjs|django|go|expo|python-data|ai-agent|spring-boot|roblox|none]
 #                   [--harness claude,codex,cursor,gemini] [--skills ai,tdd,taste] [--no-blackbox] [--no-mcp|--mcp] [--solo] [--with-tests] [--update] TARGET
 # Never overwrites your files: if AGENTS.md, CLAUDE.md, settings.json… already exist and differ,
 # the kit's version is written as <file>.uak-new for you to merge. A file that is an earlier kit version nobody
@@ -187,6 +187,13 @@ case ",$extra," in *,taste,*|*,design-taste-frontend,*) skills="$skills design-t
 case ",$extra," in *,tdd,*) case " $skills " in *" test-driven-development "*) ;; *) skills="$skills test-driven-development";; esac;; esac
 case "$stack" in fastapi-react|nextjs|expo) skills="$skills vercel-react-best-practices"; case " $skills " in *" product-ui "*) ;; *) skills="$skills frontend-design product-ui landing-story";; esac;; esac
 [ "$stack" != ai-agent ] || case " $skills " in *" mcp-builder "*) ;; *) skills="$skills mcp-builder";; esac
+# Roblox has no browser: the web design chain (browser screenshots, landings, Playwright) does not apply to a game
+# built in Studio, so those skills stay out of a Roblox install and stack-roblox carries the UI rules.
+if [ "$stack" = roblox ]; then
+  keep_s=
+  for s in $skills; do case "$s" in frontend-design|product-ui|landing-story|redesign-existing-projects|webapp-testing|design-taste-frontend) ;; *) keep_s="$keep_s $s";; esac; done
+  skills=$keep_s
+fi
 for s in $skills; do putdir "$kit/.uak/skills/$s" "$target/.claude/skills/$s"; done
 # External skills (settings/external-skills.tsv: name, repo URL, commit, subfolder, tree SHA): fetched with git only,
 # the tree SHA checked, never shipped in the kit (MotionSites' examples and media may not be redistributed, its LICENSE
@@ -319,6 +326,10 @@ for line in .env '.env.*' '!.env.example' .uak-env .claude/settings.local.json _
 done
 case "$stack" in spring-boot) # Maven/Gradle build output
   for line in target/ .gradle/ build/ '*.class'; do
+    grep -qxF -- "$line" "$target/.gitignore" || { printf '%s\n' "$line" >> "$target/.gitignore"; say "  + .gitignore: $line"; }
+  done;;
+  roblox) # Rojo builds, Studio lock files and Wally packages: binary or generated, never merged
+  for line in '*.rbxl' '*.rbxlx' '*.rbxl.lock' '*.rbxlx.lock' Packages/ ServerPackages/; do
     grep -qxF -- "$line" "$target/.gitignore" || { printf '%s\n' "$line" >> "$target/.gitignore"; say "  + .gitignore: $line"; }
   done;; esac
 # LF for the kit's scripts whatever core.autocrlf says. Why (Windows audit, Oct 2026): Git for Windows sets autocrlf=true

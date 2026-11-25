@@ -7,6 +7,9 @@
 # the variable NAMES from .env.example go into render.yaml (sync: false, set in the dashboard); .env is never read.
 # --disk PATH (e.g. data/live): the app writes files there at runtime, so the service gets a persistent disk.
 # Why (Chilangatón): the deploy file was hand-written by a human at 14:30 for a 15:00 deadline, outside the kit.
+# A Rojo project (default.project.json, the Roblox stack) publishes a place instead: --write creates
+# scripts/publish-place.sh (rojo build + the Open Cloud Assets API, test place by default, live only with --live) and an
+# opt-in CI example that publishes the test place on merges. Agents never run it: publishing is a human step.
 set -u
 [ -z "${UAK_LG_OWED:-}" ] || { . "${0%/*}/lib/ledger.sh"; ledger_owed; }  # closes the ledger line (UAK-136)
 LC_ALL=C; export LC_ALL
@@ -21,6 +24,92 @@ root=$(git rev-parse --show-toplevel 2>/dev/null) || { printf 'DEPLOY: run it in
 cd "$root" || exit 2
 name=$(basename "$root" | tr 'A-Z' 'a-z' | tr -c 'a-z0-9-\n' '-' | sed 's/--*/-/g; s/^-//; s/-$//' | cut -c 1-40)
 has() { grep -qs "$1" "$2"; }
+# Roblox: a place is published, not served. Open Cloud Assets API (create.roblox.com/docs/cloud/guides/usage-place-publishing,
+# read 2026-11-24): PATCH assets/v1/assets/{placeId} with published=true, then poll the operation until done.
+if [ -f default.project.json ]; then
+  printf 'DEPLOY roblox · target a Roblox place via Open Cloud · build: rojo build -o build/game.rbxl\n'
+  printf 'DEPLOY env (names only, set them in your shell or CI secrets, never in git): ROBLOX_API_KEY ROBLOX_UNIVERSE_ID ROBLOX_TEST_PLACE_ID ROBLOX_LIVE_PLACE_ID\n'
+  printf 'DEPLOY human: create the API key under your user (group keys cannot publish) with universe:publish on this experience; keep a private test place apart from the live one\n'
+  publish_script() {
+    cat <<'UAK_PUBLISH'
+#!/usr/bin/env bash
+# Built by uak deploy · publish this Rojo project to a Roblox place with Open Cloud. A HUMAN runs it, never an agent.
+#   bash scripts/publish-place.sh            build and publish to the TEST place (ROBLOX_TEST_PLACE_ID)
+#   bash scripts/publish-place.sh --live     build and publish to the LIVE place (ROBLOX_LIVE_PLACE_ID); asks to confirm
+#   bash scripts/publish-place.sh --save     upload as a saved, unpublished version
+# Needs: rojo, curl; ROBLOX_API_KEY (universe:publish, user-owned key) and the place IDs in the environment.
+# API: create.roblox.com/docs/cloud/guides/usage-place-publishing (PATCH assets/v1/assets/{placeId}, then poll the operation).
+set -eu
+live=no published=true
+for a in "$@"; do case "$a" in --live) live=yes;; --save) published=false;; *) echo "Usage: $0 [--live] [--save]" >&2; exit 2;; esac; done
+if [ -n "${UAK_AGENT:-}" ] || { [ -f .uak-env ] && grep -q '^UAK_AGENT=' .uak-env && [ -z "${UAK_HUMAN:-}" ]; }; then
+  echo "publish-place: publishing is a human step (AGENTS.md 1.3). A human runs it with UAK_HUMAN=<name>." >&2; exit 3
+fi
+: "${ROBLOX_API_KEY:?set ROBLOX_API_KEY (never commit it)}"
+if [ "$live" = yes ]; then place=${ROBLOX_LIVE_PLACE_ID:?set ROBLOX_LIVE_PLACE_ID}
+  printf 'Publish to the LIVE place %s? Players will get this build. Type the place ID to confirm: ' "$place"
+  read -r answer; [ "$answer" = "$place" ] || { echo "publish-place: not confirmed, nothing sent." >&2; exit 1; }
+else place=${ROBLOX_TEST_PLACE_ID:?set ROBLOX_TEST_PLACE_ID}; fi
+mkdir -p build
+rojo build -o build/game.rbxl
+resp=$(curl -sS --fail-with-body -X PATCH "https://apis.roblox.com/assets/v1/assets/$place" \
+  -H "x-api-key: $ROBLOX_API_KEY" \
+  --form-string "request={\"assetId\": $place, \"assetType\": \"Place\", \"published\": $published}" \
+  -F "fileContent=@build/game.rbxl;type=application/octet-stream")
+op=$(printf '%s' "$resp" | sed -n 's/.*"path"[[:space:]]*:[[:space:]]*"\(operations\/[^"]*\)".*/\1/p')
+[ -n "$op" ] || { echo "publish-place: unexpected answer: $resp" >&2; exit 1; }
+for _ in $(seq 1 60); do
+  st=$(curl -sS -H "x-api-key: $ROBLOX_API_KEY" "https://apis.roblox.com/assets/v1/$op")
+  case "$st" in *'"done": true'*|*'"done":true'*)
+    case "$st" in *'"error"'*) echo "publish-place: failed: $st" >&2; exit 1;; esac
+    rev=$(printf '%s' "$st" | sed -n 's/.*"revisionId"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+    echo "PUBLISHED place $place revision ${rev:-?} (published=$published). Check it on a phone before telling anyone."; exit 0;;
+  esac
+  sleep 2
+done
+echo "publish-place: still processing after 2 min: $op" >&2; exit 1
+UAK_PUBLISH
+  }
+  workflow_example() {
+    cat <<'UAK_WF'
+# Built by uak deploy · OPT-IN: rename to roblox-publish-test.yml only after a human adds the repo secrets
+# ROBLOX_API_KEY and ROBLOX_TEST_PLACE_ID. It publishes the TEST place on every push to main; never the live place.
+name: publish test place
+on:
+  push:
+    branches: [main]
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: roblox-test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rojo (pin the version your rokit.toml uses)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ROJO_TAG: v7.4.4
+        run: |
+          gh release download "$ROJO_TAG" -R rojo-rbx/rojo --pattern '*linux-x86_64.zip' -O rojo.zip
+          unzip -q rojo.zip -d "$HOME/.rojo" && echo "$HOME/.rojo" >> "$GITHUB_PATH"
+      - run: bash scripts/publish-place.sh
+        env:
+          UAK_HUMAN: ci
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          ROBLOX_TEST_PLACE_ID: ${{ secrets.ROBLOX_TEST_PLACE_ID }}
+UAK_WF
+  }
+  rput() { local f=$1; shift; mkdir -p "$(dirname "$f")"
+    if [ -e "$f" ]; then "$@" > "$f.uak-new"; printf 'DEPLOY kept your %s; the proposal is %s.uak-new\n' "$f" "$f"
+    else "$@" > "$f"; printf 'DEPLOY wrote %s\n' "$f"; fi; }
+  if [ "$write" = yes ]; then
+    rput scripts/publish-place.sh publish_script; chmod +x scripts/publish-place.sh 2>/dev/null || true
+    rput .github/workflows/roblox-publish-test.yml.example workflow_example
+    printf 'DEPLOY next: a human sets the env names above and runs bash scripts/publish-place.sh (test place). Live: --live, after a playtest.\n'
+  else
+    printf 'DEPLOY files: bash .uak/bin/uak deploy --write creates scripts/publish-place.sh and .github/workflows/roblox-publish-test.yml.example; nothing is changed now.\n'
+  fi
+  exit 0
+fi
 py=no; [ -f pyproject.toml ] && py=yes
 uvlock=no; [ -f uv.lock ] && uvlock=yes
 stack= port=8000 health= notes=

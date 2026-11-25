@@ -305,7 +305,7 @@ def frontend_uses_the_design_system(r):
     expect(good.returncode == 0 and "DESIGN_LINT_PASS files=1" in good.stdout, good.stdout)
 
     # Since v5.10 marathon installs the whole design chain with or without a web stack: users judge its screens too.
-    for mode, stack, want in (("sprint", "none", True), ("marathon", "fastapi-react", True), ("marathon", "none", True)):
+    for mode, stack, want in (("sprint", "none", True), ("marathon", "none", True)):
         d = r.scratch / ("v54-design-" + mode + "-" + stack); d.mkdir()
         r.g(d, "init", "-q", "-b", "main")
         r.run([r.bash, str(pkg / "install.sh"), "--mode", mode, "--stack", stack, "--harness", "claude", str(d)], cwd=d)
@@ -317,12 +317,10 @@ def frontend_uses_the_design_system(r):
     expect("Never skip the screenshots" in text(".claude/commands/uak-design-lock.md") and "a floor every direction meets" in text(".claude/commands/uak-design-lock.md"),
            "the lock is picked by looking; accessibility is a floor, not a style")
     expect("design-lint" in text(".claude/agents/design-critic.md") and "VERDICT: SHIP" in text(".claude/agents/design-critic.md") and "did not open" in text(".claude/agents/design-critic.md"), "the critic runs the gate, looks at the screenshots and writes the verdict done checks")
-    expect("`product-ui`" in text(".uak/stacks/fastapi-react/skills/stack-frontend/SKILL.md"), "app screens route to product-ui")
-    expect("**Landing P0**" in text(".claude/commands/uak-plan.md") and "landing-story" in text(".claude/agents/design-critic.md")
-           and "`landing-story`" in text(".uak/stacks/fastapi-react/skills/stack-frontend/SKILL.md"), "the landing is planned, built and judged as a story")
+    expect("**Landing P0**" in text(".claude/commands/uak-plan.md") and "landing-story" in text(".claude/agents/design-critic.md"),
+           "the landing is planned, built and judged as a story")
     story = text(".uak/skills/landing-story/SKILL.md")
     expect("IDEA.md" in story and "5-second test" in story and "fake dashboard" in story and "cover the logo" in story, "the landing skill works from the idea, with real screens")
-    expect("bash .uak/bin/design-lint &&" in text(".uak/stacks/fastapi-react/STACK.md"), "the stack smoke runs the gate")
     return {"design": True}
 
 

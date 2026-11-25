@@ -380,7 +380,7 @@ def check_garden(findings):
         d = Path(tempfile.mkdtemp(prefix="kit-lint-"))
         try:
             subprocess.run(["git", "init", "-q", "-b", "main", str(d)], check=True, capture_output=True)
-            subprocess.run(["bash", str(ROOT / "install.sh"), "--mode", mode, "--stack", "fastapi-react", str(d)], check=True, capture_output=True)
+            subprocess.run(["bash", str(ROOT / "install.sh"), "--mode", mode, "--stack", "roblox", str(d)], check=True, capture_output=True)
             out = subprocess.run(["bash", ".uak/bin/uak", "garden"], cwd=d, capture_output=True, text=True, errors="replace").stdout
             drift = out.split("DRIFT", 1)[1].split("\n\n", 1)[0].splitlines()[1:] if "DRIFT" in out else ["no DRIFT section"]
             for line in drift:

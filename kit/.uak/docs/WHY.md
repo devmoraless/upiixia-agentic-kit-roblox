@@ -1,6 +1,6 @@
 # Why each rule exists
 
-Load only the row you need. Every rule cites the incident behind it. Data comes from Hack-Nation 2026: 5 agents, 4 humans, 3 machines, 76 PRs, ~14 h (`docs/RETRO-hacknation-2026.md` in the kit repo).
+Load only the row you need. Every rule cites the incident behind it. Data comes from Hack-Nation 2026: 5 agents, 4 humans, 3 machines, 76 PRs, ~14 h (the retro is in the upstream kit repo, JoahanMorales/upiixia-agentic-kit).
 
 | Rule | Incident / reason |
 |---|---|

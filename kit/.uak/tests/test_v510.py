@@ -236,14 +236,14 @@ def both_modes_get_test_first_and_the_design_chain(r):
         t = r.scratch / ("v510-install-" + mode)
         t.mkdir()
         r.g(t, "init", "-q", "-b", "main")
-        r.run([r.bash, str(r.package.parent / "install.sh"), "--mode", mode, "--stack", "fastapi-react", "--harness", "claude,codex", str(t)], cwd=t)
+        r.run([r.bash, str(r.package.parent / "install.sh"), "--mode", mode, "--stack", "none", "--harness", "claude,codex", str(t)], cwd=t)
         for skill in ("test-first", "frontend-design", "product-ui", "landing-story", "redesign-existing-projects"):
             expect((t / ".claude/skills" / skill / "SKILL.md").is_file(), "%s: skill %s" % (mode, skill))
         expect(not (t / ".claude/skills/test-driven-development").exists(), mode + ": test-first replaces it")
         expect((t / ".claude/agents/design-critic.md").is_file() and (t / ".codex/agents/design-critic.toml").is_file(), mode + ": the critic")
         expect((t / ".claude/commands/uak-design-lock.md").is_file(), mode + ": the design lock")
         project = (t / ".uak/PROJECT.md").read_text(encoding="utf-8")
-        expect("Test-First: yes" in project and "UI-Paths: web/src/" in project, project)
+        expect("Test-First: yes" in project, project)
     return {"modes": 2}
 
 

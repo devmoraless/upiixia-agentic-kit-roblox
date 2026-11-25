@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # UPIIXIA Agentic Kit installer.
-#   bash install.sh --mode sprint|marathon [--stack fastapi-react|nextjs|django|go|expo|python-data|ai-agent|spring-boot|roblox|none]
+#   bash install.sh --mode sprint|marathon [--stack roblox|none]
 #                   [--harness claude,codex,cursor,gemini] [--skills ai,tdd,taste] [--no-blackbox] [--no-mcp|--mcp] [--solo] [--with-tests] [--update] TARGET
 # Never overwrites your files: if AGENTS.md, CLAUDE.md, settings.json… already exist and differ,
 # the kit's version is written as <file>.uak-new for you to merge. A file that is an earlier kit version nobody
@@ -147,17 +147,6 @@ if [ "$solo" = yes ] && grep -q '^Review-Mode: gh$' "$target/.uak/PROJECT.md"; t
   sed 's/^Review-Mode: gh$/Review-Mode: claims/' "$target/.uak/PROJECT.md" > "$target/.uak/PROJECT.md.tmp" && mv "$target/.uak/PROJECT.md.tmp" "$target/.uak/PROJECT.md"
   say "  + .uak/PROJECT.md: Review-Mode: claims (--solo: agents review each other on claims; GitHub never lets you approve your own PR)"
 fi
-# UI-Paths: where screens live for this stack. A task that writes there ships with its screenshots and the design
-# critic's verdict (uak done checks them). Why (Hacktoberfest): approvals said "UI not walked in browser" and the
-# shipped screens were one template copied ten times.
-ui_paths=
-case "$stack" in fastapi-react) ui_paths='web/src/';; nextjs) ui_paths='app/, components/, src/app/, src/components/';; expo) ui_paths='app/, components/';; esac
-if [ -n "$ui_paths" ] && ! grep -q '^UI-Paths:' "$target/.uak/PROJECT.md" && [ "$update" = yes ]; then
-  say "  ! .uak/PROJECT.md: no UI-Paths. To make UI tasks ship with screenshots and the critic's verdict, a human adds: UI-Paths: $ui_paths"
-elif [ -n "$ui_paths" ] && ! grep -q '^UI-Paths:' "$target/.uak/PROJECT.md" && grep -q '^Additive-Paths:' "$target/.uak/PROJECT.md"; then
-  awk -v v="UI-Paths: $ui_paths" '{ print } /^Additive-Paths:/ && !d { print v; d = 1 }' "$target/.uak/PROJECT.md" > "$target/.uak/PROJECT.md.tmp" &&
-    mv "$target/.uak/PROJECT.md.tmp" "$target/.uak/PROJECT.md" && say "  + .uak/PROJECT.md: UI-Paths: $ui_paths (UI tasks ship with screenshots and the design critic's verdict)"
-fi
 # Test-First: done asks for the red (uak red) and checks the task's named tests. A project from before v5.10 keeps
 # warnings only until a human opts in.
 if ! grep -q '^Test-First:' "$target/.uak/PROJECT.md" && [ "$update" = yes ]; then
@@ -192,8 +181,6 @@ esac
 case ",$extra," in *,ai,*) skills="$skills mcp-builder";; esac
 case ",$extra," in *,taste,*|*,design-taste-frontend,*) skills="$skills design-taste-frontend";; esac
 case ",$extra," in *,tdd,*) case " $skills " in *" test-driven-development "*) ;; *) skills="$skills test-driven-development";; esac;; esac
-case "$stack" in fastapi-react|nextjs|expo) skills="$skills vercel-react-best-practices"; case " $skills " in *" product-ui "*) ;; *) skills="$skills frontend-design product-ui landing-story";; esac;; esac
-[ "$stack" != ai-agent ] || case " $skills " in *" mcp-builder "*) ;; *) skills="$skills mcp-builder";; esac
 # Roblox has no browser: the web design chain (browser screenshots, landings, Playwright) does not apply to a game
 # built in Studio, so those skills stay out of a Roblox install and stack-roblox carries the UI rules.
 if [ "$stack" = roblox ]; then
@@ -331,11 +318,7 @@ for line in .env '.env.*' '!.env.example' .uak-env .claude/settings.local.json _
     .venv/ node_modules/ .next/ dist/ .DS_Store .uak-shots/; do
   grep -qxF -- "$line" "$target/.gitignore" || { printf '%s\n' "$line" >> "$target/.gitignore"; say "  + .gitignore: $line"; }
 done
-case "$stack" in spring-boot) # Maven/Gradle build output
-  for line in target/ .gradle/ build/ '*.class'; do
-    grep -qxF -- "$line" "$target/.gitignore" || { printf '%s\n' "$line" >> "$target/.gitignore"; say "  + .gitignore: $line"; }
-  done;;
-  roblox) # Rojo builds, Studio lock files and Wally packages: binary or generated, never merged
+case "$stack" in roblox) # Rojo builds, Studio lock files and Wally packages: binary or generated, never merged
   for line in '*.rbxl' '*.rbxlx' '*.rbxl.lock' '*.rbxlx.lock' Packages/ ServerPackages/; do
     grep -qxF -- "$line" "$target/.gitignore" || { printf '%s\n' "$line" >> "$target/.gitignore"; say "  + .gitignore: $line"; }
   done;; esac

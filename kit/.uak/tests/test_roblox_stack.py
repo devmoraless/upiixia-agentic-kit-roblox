@@ -11,8 +11,7 @@ from pathlib import Path
 from test_hack import Runner, expect, resolve_binary
 from test_skills_windows_clone import repo
 
-WEB_SKILLS = ["frontend-design", "product-ui", "landing-story", "redesign-existing-projects", "webapp-testing",
-              "vercel-react-best-practices"]
+WEB_SKILLS = ["frontend-design", "product-ui", "landing-story", "redesign-existing-projects", "webapp-testing"]
 
 
 def install(r, d, mode):

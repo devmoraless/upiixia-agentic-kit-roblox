@@ -127,16 +127,15 @@ def a_sprint_web_install_sets_the_gate(r):
     d = r.scratch / "v58-install"
     d.mkdir()
     r.g(d, "init", "-q", "-b", "main")
-    r.run([r.bash, str(r.package.parent / "install.sh"), "--mode", "sprint", "--stack", "fastapi-react", "--harness", "claude", str(d)], cwd=d)
+    r.run([r.bash, str(r.package.parent / "install.sh"), "--mode", "sprint", "--stack", "none", "--harness", "claude", str(d)], cwd=d)
     expect(not (d / ".claude/skills/design-taste-frontend").exists(), "not installed by default")
     expect((d / ".claude/skills/product-ui/SKILL.md").exists(), "product-ui is")
-    expect("UI-Paths: web/src/" in (d / ".uak/PROJECT.md").read_text(encoding="utf-8"), "UI-Paths for the stack")
     expect(".uak-shots/" in (d / ".gitignore").read_text(encoding="utf-8").splitlines(), "screenshots stay out of git")
     expect((d / ".uak/templates/DESIGN.template.md").exists(), "the DESIGN template ships")
     e = r.scratch / "v58-install-taste"
     e.mkdir()
     r.g(e, "init", "-q", "-b", "main")
-    r.run([r.bash, str(r.package.parent / "install.sh"), "--mode", "sprint", "--stack", "fastapi-react", "--skills", "taste",
+    r.run([r.bash, str(r.package.parent / "install.sh"), "--mode", "sprint", "--stack", "none", "--skills", "taste",
            "--harness", "claude", str(e)], cwd=e)
     expect((e / ".claude/skills/design-taste-frontend/SKILL.md").exists(), "--skills taste opts in")
     return {"install": True}

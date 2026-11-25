@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased · Roblox only
+
+- Removed the web stacks (`ai-agent`, `django`, `expo`, `fastapi-react`, `go`, `nextjs`, `python-data`, `spring-boot`)
+  and the `vercel-react-best-practices` skill: `install.sh --stack` now takes `roblox` or `none`. The installer no
+  longer writes a `UI-Paths` line (only the web stacks had one); the field still works when a human sets it.
+- Removed hackathon history docs (`docs/RETRO-hacknation-2026.md`, `docs/INSPIRATIONS.md`, `docs/perf-windows.md`,
+  `docs/HACKATHON.md`); they stay in the upstream repo.
+- README and `llms.txt` rewritten for Roblox. The engine, its web design chain and `uak deploy`'s web detection are
+  unchanged.
+
 ## v6.8.0 · 2026-11-22 · Lighter
 
 v6.7 made everything measurable, and the measurements said where the kit was heavy: 534 files in an install, 121 CI

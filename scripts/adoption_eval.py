@@ -119,7 +119,7 @@ def build(base):
     seed = base / "team"
     seed.mkdir()
     sh(["git", "init", "-q", "-b", "main"], seed)
-    sh(["bash", str(KIT / "install.sh"), "--mode", "sprint", "--stack", "python-data", str(seed)], base)
+    sh(["bash", str(KIT / "install.sh"), "--mode", "sprint", "--stack", "none", str(seed)], base)
     for rel, text in CODE.items():
         p = seed / rel
         p.parent.mkdir(parents=True, exist_ok=True)

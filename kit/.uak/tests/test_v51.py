@@ -557,13 +557,7 @@ JAVA = {
 
 
 def spring_boot_preset(r):
-    """A Spring Boot template, and a code map that knows Java imports (definitions only before)."""
-    pkg = r.package.parent
-    t = r.scratch / "v51-sb"; t.mkdir()
-    r.g(t, "init", "-q", "-b", "main")
-    out = r.run([r.bash, str(pkg / "install.sh"), "--mode", "marathon", "--stack", "spring-boot", "--harness", "claude", str(t)], cwd=t)
-    expect((t / ".claude/skills/stack-spring-boot/SKILL.md").exists() and (t / ".uak/stacks/spring-boot/STACK.md").exists()
-           and "target/" in (t / ".gitignore").read_text(encoding="utf-8"), out.stdout[-400:])
+    """A code map that knows Java imports (definitions only before)."""
     f = r.fixture("v51-java", count=2, paths={"HACK-001": "src/main/java/com/acme/app/common/",
                                              "HACK-002": "src/main/java/com/acme/app/orders/, src/test/java/com/acme/app/orders/"})
     config(f)

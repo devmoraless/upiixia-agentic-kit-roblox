@@ -168,28 +168,26 @@ def gemini_hooks(r):
 
 
 def stacks_install(r):
-    """Stack presets beyond FastAPI + React: each installs its skill and the smoke example."""
+    """The stack preset installs its skill and the smoke example; MCP is on by default and --no-mcp turns it off."""
     out = {}
-    for stack, skill in [("nextjs", "stack-nextjs"), ("django", "stack-django"), ("go", "stack-go"), ("expo", "stack-expo"),
-                         ("python-data", "stack-data"), ("ai-agent", "stack-ai-agent")]:
+    for stack, skill in [("roblox", "stack-roblox"), ("roblox-nomcp", "stack-roblox")]:
         t = r.scratch / ("v5-stack-" + stack)
         t.mkdir()
         r.g(t, "init", "-q", "-b", "main")
-        no_mcp = ["--no-mcp"] if stack == "go" else []   # MCP is optional: the CLI through Bash does the same
-        res = r.run([r.bash, str(r.package.parent / "install.sh"), "--mode", "sprint", "--stack", stack] + no_mcp + [str(t)], cwd=t)
+        no_mcp = ["--no-mcp"] if stack.endswith("-nomcp") else []
+        stack_dir = stack.replace("-nomcp", "")   # MCP is optional: the CLI through Bash does the same
+        res = r.run([r.bash, str(r.package.parent / "install.sh"), "--mode", "sprint", "--stack", stack_dir] + no_mcp + [str(t)], cwd=t)
         expect((t / ".claude/skills" / skill / "SKILL.md").exists(), stack + ": skill installed: " + res.stdout[-400:])
-        expect((t / ".uak/stacks" / stack / "STACK.md").exists() and (t / ".uak/bin/smoke-project.example").exists(), stack)
+        expect((t / ".uak/stacks" / stack_dir / "STACK.md").exists() and (t / ".uak/bin/smoke-project.example").exists(), stack)
         expect((t / ".github/workflows/uak-tick.yml.example").exists(), "the scheduled tick ships as an opt-in example")
         out[stack] = True
-    expect((r.scratch / "v5-stack-ai-agent/.claude/skills/mcp-builder").exists(), "ai-agent brings mcp-builder")
-    on, off = r.scratch / "v5-stack-nextjs", r.scratch / "v5-stack-go"
+    on, off = r.scratch / "v5-stack-roblox", r.scratch / "v5-stack-roblox-nomcp"
     expect((on / ".mcp.json").exists() and (on / ".cursor/mcp.json").exists(), "MCP server configured by default")
     expect("[mcp_servers.uak]" in (on / ".codex/config.toml").read_text(), "Codex gets the MCP server by default")
     expect(not (off / ".mcp.json").exists() and not (off / ".cursor/mcp.json").exists(), "--no-mcp: no MCP config")
     expect("mcp_servers" not in (off / ".codex/config.toml").read_text(), "--no-mcp: Codex config without the server")
     gem = json.loads((off / ".gemini/settings.json").read_text())
     expect("mcpServers" not in gem and "hooks" in gem, "--no-mcp: Gemini settings valid, hooks kept, no server")
-    expect((r.scratch / "v5-stack-nextjs/.claude/skills/vercel-react-best-practices").exists(), "nextjs brings the React rules")
     return out
 
 

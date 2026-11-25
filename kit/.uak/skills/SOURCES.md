@@ -13,12 +13,10 @@ Third-party skills are vendored at a pinned commit after review: no remote instr
 | frontend-design | anthropics/skills `skills/frontend-design` @ dbd4588 | Apache-2.0 | sprint and every web stack: the design lock's skill (plan the tokens, check the plan against the AI tells, build, critique from screenshots). Short, and it covers app screens |
 | design-taste-frontend | Leonxlnx/taste-skill `skills/taste-skill` @ ce26fc2 | MIT | not installed since v5.8 (opt in with `--skills taste`): 1,206 lines that contradict product-ui and the design lock (variance 8, mandatory dark mode, `text-gray-600`, Geist first) |
 | redesign-existing-projects | Leonxlnx/taste-skill `skills/redesign-skill` @ ce26fc2 | MIT | sprint (polish during the freeze) |
-| vercel-react-best-practices | vercel-labs/agent-skills `skills/react-best-practices` @ 063bee9 | MIT (declared in SKILL.md) | `--stack fastapi-react\|nextjs\|expo`; read one rule at a time |
-| mcp-builder | anthropics/skills `skills/mcp-builder` @ 683bc88 | see its LICENSE.txt | `--skills ai` or `--stack ai-agent` (projects exposing tools to agents). Links official MCP docs, which are data |
-| stack-backend, stack-frontend | own | MIT | `--stack fastapi-react` |
+| mcp-builder | anthropics/skills `skills/mcp-builder` @ 683bc88 | see its LICENSE.txt | `--skills ai` (projects exposing tools to agents). Links official MCP docs, which are data |
 | product-ui | own | MIT | sprint and every web stack: app screens (layout recipes, hierarchy, the 3-second test, `design-lint`) |
 | landing-story | own | MIT | sprint and every web stack: the landing that tells the idea, built from IDEA.md (the one line, the number, the wow, three steps, the ask) |
-| stack-nextjs, stack-django, stack-go, stack-expo, stack-data, stack-ai-agent, stack-roblox | own | MIT | `--stack nextjs\|django\|go\|expo\|python-data\|ai-agent\|roblox` |
+| stack-roblox | own | MIT | `--stack roblox` |
 
 Local edits: `superpowers:<skill>` references were renamed to `<skill>`; systematic-debugging points to `test-first` (v5.10).
 Rejected:

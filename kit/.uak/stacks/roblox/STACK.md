@@ -67,5 +67,6 @@ playtest.
 
 ## Publish
 Publishing a place is outward-facing: only a human does it, or authorizes it explicitly (AGENTS.md §1.3). Keep a private
-test place apart from the live one. With Open Cloud: `rojo build -o game.rbxl`, then upload it with an API key kept in
-`.env` (`ROBLOX_API_KEY`, never committed, never read by agents).
+test place apart from the live one. `bash .uak/bin/uak deploy --write` creates `scripts/publish-place.sh` (rojo build +
+Open Cloud, the test place by default, `--live` asks for the place ID) and an opt-in CI example for the test place. The
+API key (`ROBLOX_API_KEY`, user-owned, `universe:publish`) lives in the human's shell or CI secrets, never in git.
